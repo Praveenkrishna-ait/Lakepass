@@ -67,8 +67,14 @@ router.post('/create-order', auth, async (req, res) => {
       total_price: totalPrice,
     });
   } catch (err) {
-    console.error('Create Order Error:', err.message);
-    res.status(500).json({ msg: 'Failed to create payment order' });
+    console.error('Create Order Error:', err);
+    let errorMessage = 'Failed to create payment order';
+    if (err && err.error && err.error.description) {
+      errorMessage = err.error.description;
+    } else if (err && err.message) {
+      errorMessage = err.message;
+    }
+    res.status(500).json({ msg: errorMessage });
   }
 });
 
