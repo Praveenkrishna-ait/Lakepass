@@ -64,6 +64,24 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': data['message'] ?? 'Reset email sent successfully.'};
+      }
+      return {'success': false, 'message': data['message'] ?? data['error'] ?? 'Failed to send reset email.'};
+    } catch (e) {
+      print('ForgotPassword Error: $e');
+      return {'success': false, 'message': 'Network error. Please try again.'};
+    }
+  }
+
   void logout() async {
     _token = null;
     _userId = null;

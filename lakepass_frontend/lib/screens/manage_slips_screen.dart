@@ -1,8 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/marina_service.dart';
 import '../utils/constants.dart';
-import '../widgets/sea_background.dart';
 
 class ManageSlipsScreen extends StatefulWidget {
   final int marinaId;
@@ -75,170 +73,187 @@ class _ManageSlipsScreenState extends State<ManageSlipsScreen> {
     _fetchSlips();
   }
 
-  Widget _glassField(TextEditingController controller, String label, IconData icon,
-      {TextInputType keyboardType = TextInputType.text}) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
-        prefixIcon: Icon(icon, color: Colors.white70),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        filled: true,
-        fillColor: Colors.black.withOpacity(0.2),
-      ),
+  Widget _inputField(TextEditingController controller, String label, IconData icon, {TextInputType keyboardType = TextInputType.text}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Enter $label',
+            hintStyle: const TextStyle(color: AppColors.textMuted),
+            prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+            filled: true,
+            fillColor: AppColors.backgroundAlt,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+          ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: AppColors.backgroundAlt,
       appBar: AppBar(
-        title: Text('Manage Slips: ${widget.marinaName}',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
+        title: Text('Manage Slips: ${widget.marinaName}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        backgroundColor: AppColors.background,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        surfaceTintColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
-      body: SeaBackground(
-        child: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.white))
-          : Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left panel: glassmorphism form
-                  SizedBox(
-                    width: 300,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('Add New Slip',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                              const SizedBox(height: 16),
-                              _glassField(_nameController, 'Slip Name (e.g. A-12)', Icons.directions_boat),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(child: _glassField(_lengthController, 'Length (ft)', Icons.swap_horiz, keyboardType: TextInputType.number)),
-                                  const SizedBox(width: 12),
-                                  Expanded(child: _glassField(_widthController, 'Width (ft)', Icons.swap_vert, keyboardType: TextInputType.number)),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              _glassField(_priceController, 'Price/night (₹)', Icons.currency_rupee, keyboardType: TextInputType.number),
-                              const SizedBox(height: 20),
-                              SizedBox(
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  onPressed: _createSlip,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: AppColors.background,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  child: const Text('Create Slip', style: TextStyle(fontWeight: FontWeight.bold)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+      body: _isLoading
+        ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
+        : Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left panel: form
+                SizedBox(
+                  width: 340,
+                  child: Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
-                  ),
-                  const SizedBox(width: 24),
-                  // Right panel: image slip cards
-                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('Current Slips',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Row(children: [
+                          Container(width: 20, height: 3, decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(2))),
+                          const SizedBox(width: 10),
+                          const Text('NEW SLIP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent, letterSpacing: 1.5)),
+                        ]),
+                        const SizedBox(height: 12),
+                        const Text('Add Slip Details', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5)),
+                        const SizedBox(height: 24),
+                        _inputField(_nameController, 'Slip Name (e.g. A-12)', Icons.directions_boat),
                         const SizedBox(height: 16),
-                        if (_slips.isEmpty)
-                          const Text('No slips added yet.', style: TextStyle(color: Colors.white70)),
-                        Expanded(
-                          child: GridView.builder(
-                            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 340,
-                              mainAxisExtent: 220,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
+                        Row(
+                          children: [
+                            Expanded(child: _inputField(_lengthController, 'Length (ft)', Icons.swap_horiz, keyboardType: TextInputType.number)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _inputField(_widthController, 'Width (ft)', Icons.swap_vert, keyboardType: TextInputType.number)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _inputField(_priceController, 'Price/night (\$)', Icons.attach_money, keyboardType: TextInputType.number),
+                        const SizedBox(height: 28),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _createSlip,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.cta,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
                             ),
-                            itemCount: _slips.length,
-                            itemBuilder: (context, index) {
-                              final slip = _slips[index];
-                              final imageUrl = _slipImages[index % _slipImages.length];
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Stack(
-                                  fit: StackFit.expand,
+                            child: const Text('Create Slip', style: TextStyle(fontWeight: FontWeight.w700)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 32),
+                // Right panel: slips
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Container(width: 20, height: 3, decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(2))),
+                        const SizedBox(width: 10),
+                        const Text('INVENTORY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent, letterSpacing: 1.5)),
+                      ]),
+                      const SizedBox(height: 12),
+                      const Text('Current Slips', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5)),
+                      const SizedBox(height: 24),
+                      if (_slips.isEmpty)
+                        const Text('No slips added yet.', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+                      Expanded(
+                        child: GridView.builder(
+                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 360,
+                            mainAxisExtent: 280,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                          ),
+                          itemCount: _slips.length,
+                          itemBuilder: (context, index) {
+                            final slip = _slips[index];
+                            final imageUrl = _slipImages[index % _slipImages.length];
+                            return TweenAnimationBuilder(
+                              tween: Tween<double>(begin: 0, end: 1),
+                              duration: Duration(milliseconds: 400 + (index * 80)),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, double value, child) => Transform.translate(
+                                offset: Offset(0, 30 * (1 - value)), child: Opacity(opacity: value, child: child)),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.border),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Image.network(imageUrl, fit: BoxFit.cover,
-                                        errorBuilder: (ctx, err, st) => Container(color: AppColors.surface)),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
-                                        ),
-                                      ),
+                                    Expanded(
+                                      child: Image.network(imageUrl, width: double.infinity, fit: BoxFit.cover,
+                                          errorBuilder: (ctx, err, st) => Container(color: AppColors.backgroundAlt)),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.all(18),
+                                      padding: const EdgeInsets.all(20),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          Text(slip['name'],
-                                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(slip['name'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                                              Text('\$${slip['price_per_night']}/night', style: const TextStyle(fontSize: 16, color: AppColors.textPrimary, fontWeight: FontWeight.w800)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
                                           Row(children: [
-                                            const Icon(Icons.straighten, color: AppColors.primary, size: 14),
+                                            const Icon(Icons.straighten, color: AppColors.textSecondary, size: 14),
                                             const SizedBox(width: 4),
-                                            Text('${slip['length']}ft × ${slip['width']}ft',
-                                                style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                                          ]),
-                                          const SizedBox(height: 4),
-                                          Row(children: [
-                                            const Icon(Icons.currency_rupee, color: AppColors.primary, size: 16),
-                                            Text('${slip['price_per_night']}/night',
-                                                style: const TextStyle(fontSize: 16, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                            Text('${slip['length']}ft × ${slip['width']}ft', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                                           ]),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-      ),
+          ),
     );
   }
 }
