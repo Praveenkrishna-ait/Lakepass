@@ -388,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // ── FEATURED SECTION ──
   Widget _buildFeaturedSection() {
-    if (_marinas.isEmpty && !_isLoadingMarinas) return const SizedBox();
+    final displayMarinas = _marinas;
 
     final List<String> marinaImages = [
       'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&auto=format&fit=crop',
@@ -434,9 +434,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               height: 380,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: _marinas.length > 6 ? 6 : _marinas.length,
+                itemCount: displayMarinas.length > 6 ? 6 : displayMarinas.length,
                 itemBuilder: (context, index) {
-                  final marina = _marinas[index];
+                  final marina = displayMarinas[index];
                   final imageUrl = marinaImages[index % marinaImages.length];
                   return ScrollReveal(
                     delay: Duration(milliseconds: 600 + (index * 200)),

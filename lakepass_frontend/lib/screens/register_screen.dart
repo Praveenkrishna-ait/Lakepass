@@ -37,10 +37,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       setState(() => _errorMessage = 'Please fill in all fields.'); return;
     }
     setState(() { _isLoading = true; _errorMessage = null; });
-    final success = await Provider.of<AuthProvider>(context, listen: false)
+    final errorMessage = await Provider.of<AuthProvider>(context, listen: false)
         .register(_nameController.text.trim(), _emailController.text.trim(), _passwordController.text, _role);
-    if (success && mounted) { Navigator.pop(context); }
-    else if (mounted) { setState(() { _errorMessage = 'Registration failed. Email may already be in use.'; _isLoading = false; }); }
+    if (errorMessage == null && mounted) { Navigator.pop(context); }
+    else if (mounted) { setState(() { _errorMessage = errorMessage ?? 'Registration failed.'; _isLoading = false; }); }
   }
 
   @override

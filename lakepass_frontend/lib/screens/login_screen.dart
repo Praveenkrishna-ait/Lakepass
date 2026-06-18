@@ -31,12 +31,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void dispose() { _animCtrl.dispose(); _emailController.dispose(); _passwordController.dispose(); super.dispose(); }
 
-  void _submit() async {
+  void _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      setState(() => _errorMessage = 'Please enter email and password.'); return;
+    }
     setState(() { _isLoading = true; _errorMessage = null; });
-    final success = await Provider.of<AuthProvider>(context, listen: false)
+    final errorMessage = await Provider.of<AuthProvider>(context, listen: false)
         .login(_emailController.text.trim(), _passwordController.text);
-    if (success && mounted) { Navigator.pop(context); }
-    else if (mounted) { setState(() { _errorMessage = 'Invalid email or password. Please try again.'; _isLoading = false; }); }
+    if (errorMessage == null && mounted) {
+      Navigator.pop(context);
+    } else if (mounted) {
+      setState(() { _errorMessage = errorMessage ?? 'Invalid credentials.'; _isLoading = false; });
+    }
   }
 
   @override
@@ -209,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             SizedBox(
               width: double.infinity, height: 52,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
+                onPressed: _isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.cta, foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0,

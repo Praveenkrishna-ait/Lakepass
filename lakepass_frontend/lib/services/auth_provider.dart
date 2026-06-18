@@ -16,7 +16,7 @@ class AuthProvider with ChangeNotifier {
   String? get name => _name;
   String? get userId => _userId;
 
-  Future<bool> login(String email, String password) async {
+  Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/auth/login'),
@@ -37,16 +37,22 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString('name', _name!);
         await prefs.setString('userId', _userId!);
         notifyListeners();
-        return true;
+        return null;
       }
-      return false;
+      
+      try {
+        final errorData = jsonDecode(response.body);
+        return errorData['error'] ?? 'Login failed. Please try again.';
+      } catch (_) {
+        return 'Server error (Code: ${response.statusCode})';
+      }
     } catch (e) {
       print('Login Error: $e');
-      return false;
+      return 'Network error. Please check your connection.';
     }
   }
 
-  Future<bool> register(String name, String email, String password, String role) async {
+  Future<String?> register(String name, String email, String password, String role) async {
     try {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/auth/register'),
@@ -57,10 +63,16 @@ class AuthProvider with ChangeNotifier {
       if (response.statusCode == 201) {
         return await login(email, password);
       }
-      return false;
+      
+      try {
+        final errorData = jsonDecode(response.body);
+        return errorData['error'] ?? 'Registration failed.';
+      } catch (_) {
+        return 'Server error (Code: ${response.statusCode})';
+      }
     } catch (e) {
       print('Registration Error: $e');
-      return false;
+      return 'Network error. Please check your connection.';
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 // Design tokens inspired by Adra Product Studio's design language
 // Clean, modern, light/dark alternating sections with premium feel
