@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Welcome back', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5)),
+            const Text('Welcome back to LakePass', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5)),
             const SizedBox(height: 6),
             const Text('Sign in to your LakePass account', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
             const SizedBox(height: 36),
