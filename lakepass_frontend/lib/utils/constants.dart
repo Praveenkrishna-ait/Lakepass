@@ -41,5 +41,7 @@ class AppColors {
 }
 
 class ApiConstants {
-  static const String baseUrl = 'https://lakepass-backend.vercel.app/api';
+  static const String baseUrl = kReleaseMode 
+      ? 'https://lakepass-backend.vercel.app/api'
+      : 'http://localhost:5000/api';
 }

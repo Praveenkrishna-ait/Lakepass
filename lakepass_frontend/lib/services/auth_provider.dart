@@ -52,6 +52,42 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<String?> loginWithGoogle(String idToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/auth/google-login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'idToken': idToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _token = data['token'];
+        _userId = data['user']['id'].toString();
+        _role = data['user']['role'];
+        _name = data['user']['name'];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', _token!);
+        await prefs.setString('role', _role!);
+        await prefs.setString('name', _name!);
+        await prefs.setString('userId', _userId!);
+        notifyListeners();
+        return null;
+      }
+      
+      try {
+        final errorData = jsonDecode(response.body);
+        return errorData['error'] ?? 'Google Login failed. Please try again.';
+      } catch (_) {
+        return 'Server error (Code: ${response.statusCode})';
+      }
+    } catch (e) {
+      print('Google Login Error: $e');
+      return 'Network error. Please check your connection.';
+    }
+  }
+
   Future<String?> register(String name, String email, String password, String role) async {
     try {
       final response = await http.post(

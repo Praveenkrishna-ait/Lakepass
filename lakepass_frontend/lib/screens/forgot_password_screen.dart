@@ -181,7 +181,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     return FadeTransition(
       opacity: _fadeAnim,
       child: Container(
-        width: 420,
+        constraints: const BoxConstraints(maxWidth: 420),
+        width: double.infinity,
         padding: const EdgeInsets.all(40),
         child: _emailSent ? _successPanel() : _inputForm(),
       ),

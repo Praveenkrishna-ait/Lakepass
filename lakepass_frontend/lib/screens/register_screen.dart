@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in_web/web_only.dart' as web;
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,16 +26,54 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   late AnimationController _animCtrl;
   late Animation<double> _fadeAnim;
 
+  StreamSubscription? _googleSignInSubscription;
+
   @override
   void initState() {
     super.initState();
     _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
     _animCtrl.forward();
+    if (kIsWeb) {
+      _initGoogleSignInWeb();
+    }
+  }
+
+  void _initGoogleSignInWeb() async {
+    try {
+      await GoogleSignIn.instance.initialize(
+        clientId: '643698625321-3i1k5h9gdrt3ne1hheub2fbdgcmdmd34.apps.googleusercontent.com',
+      );
+      _googleSignInSubscription = GoogleSignIn.instance.authenticationEvents.listen((event) async {
+        if (event is GoogleSignInAuthenticationEventSignIn) {
+          setState(() { _isLoading = true; _errorMessage = null; });
+          final idToken = event.user.authentication.idToken;
+          if (idToken != null) {
+            final errorMessage = await Provider.of<AuthProvider>(context, listen: false).loginWithGoogle(idToken);
+            if (errorMessage == null && mounted) {
+              Navigator.pop(context);
+            } else if (mounted) {
+              setState(() { _errorMessage = errorMessage ?? 'Google Sign-In failed.'; _isLoading = false; });
+            }
+          } else {
+            if (mounted) setState(() { _errorMessage = 'Failed to retrieve Google token.'; _isLoading = false; });
+          }
+        }
+      });
+    } catch (e) {
+      print('Google Sign-In Init Error: $e');
+    }
   }
 
   @override
-  void dispose() { _animCtrl.dispose(); _nameController.dispose(); _emailController.dispose(); _passwordController.dispose(); super.dispose(); }
+  void dispose() { 
+    _googleSignInSubscription?.cancel();
+    _animCtrl.dispose(); 
+    _nameController.dispose(); 
+    _emailController.dispose(); 
+    _passwordController.dispose(); 
+    super.dispose(); 
+  }
 
   void _submit() async {
     if (_nameController.text.trim().isEmpty || _emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
@@ -42,6 +85,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     if (errorMessage == null && mounted) { Navigator.pop(context); }
     else if (mounted) { setState(() { _errorMessage = errorMessage ?? 'Registration failed.'; _isLoading = false; }); }
   }
+
+  // Removed _handleGoogleSignIn since web handles it via renderButton
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +152,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     return FadeTransition(
       opacity: _fadeAnim,
       child: Container(
-        width: 420,
+        constraints: const BoxConstraints(maxWidth: 420),
+        width: double.infinity,
         padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -174,6 +220,40 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
               ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Expanded(child: Divider(color: AppColors.border)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('OR', style: TextStyle(color: AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+                const Expanded(child: Divider(color: AppColors.border)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity, height: 52,
+              child: kIsWeb
+                  ? web.renderButton(
+                      configuration: web.GSIButtonConfiguration(
+                        theme: web.GSIButtonTheme.outline,
+                        size: web.GSIButtonSize.large,
+                        text: web.GSIButtonText.signupWith,
+                        shape: web.GSIButtonShape.rectangular,
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: () {},
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        side: const BorderSide(color: AppColors.border),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png', width: 24, height: 24),
+                      label: const Text('Sign in with Google', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    ),
             ),
             const SizedBox(height: 20),
             Center(child: GestureDetector(
